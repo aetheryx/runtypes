@@ -11,8 +11,8 @@ type RecordStaticType<
     ? { readonly [K in keyof O]?: Static<O[K]> }
     : { [K in keyof O]?: Static<O[K]> }
   : RO extends true
-  ? { readonly [K in keyof O]: Static<O[K]> }
-  : { [K in keyof O]: Static<O[K]> };
+    ? { readonly [K in keyof O]: Static<O[K]> }
+    : { [K in keyof O]: Static<O[K]> };
 
 export interface InternalRecord<
   O extends { [_: string]: Runtype },
@@ -66,6 +66,10 @@ export function InternalRecord<
                 message: validated.message,
                 key: validated.key ? `${key}.${validated.key}` : key,
               };
+            } else {
+              if (fields[key].isOptional && !x[key]) {
+                x[key] = validated.value;
+              }
             }
           }
         }

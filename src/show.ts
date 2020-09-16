@@ -37,7 +37,7 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
           ? `{ ${keys
               .map(
                 k =>
-                  `${readonlyTag(refl)}${k}${partialTag(refl)}: ${show(
+                  `${readonlyTag(refl)}${k}${optionalTag(refl.isPartial || refl.fields[k].isOptional)}: ${show(
                     false,
                     circular,
                   )(refl.fields[k])};`,
@@ -67,8 +67,8 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
 
 export default show(false, new Set<Reflect>());
 
-function partialTag({ isPartial }: { isPartial: boolean }): string {
-  return isPartial ? '?' : '';
+function optionalTag(place: boolean): string {
+  return place ? '?' : '';
 }
 
 function readonlyTag({ isReadonly }: { isReadonly: boolean }): string {

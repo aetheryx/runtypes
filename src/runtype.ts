@@ -45,6 +45,11 @@ export interface Runtype<A = unknown> {
   Or<B extends Runtype>(B: B): Union2<this, B>;
 
   /**
+   * Add a default value for this Runtype if it's a child of a Record.
+   */
+  Default<T extends Static<this>>(defaultValue: Partial<T>): this;
+
+  /**
    * Intersect this Runtype with another.
    */
   And<B extends Runtype>(B: B): Intersect2<this, B>;
@@ -97,6 +102,11 @@ export interface Runtype<A = unknown> {
    */
   reflect: Reflect;
 
+  /**
+   * Set to true by .Default()
+   */
+  isOptional: boolean;
+
   /* @internal */ _falseWitness: A;
 }
 
@@ -118,11 +128,13 @@ export function create<A extends Runtype>(
   A.validate = (value: any) => A._innerValidate(value, VisitedState());
   A.guard = guard;
   A.Or = Or;
+  A.Default = Default;
   A.And = And;
   A.withConstraint = withConstraint;
   A.withGuard = withGuard;
   A.withBrand = withBrand;
   A.reflect = A;
+  A.isOptional = A.isOptional || false;
   A.toString = () => `Runtype<${show(A)}>`;
 
   return A;
@@ -141,6 +153,13 @@ export function create<A extends Runtype>(
 
   function Or<B extends Runtype>(B: B): Union2<A, B> {
     return Union(A, B);
+  }
+
+  function Default(defaultValue: any): A {
+    return create<A>((value, state) => A.validate(value ?? defaultValue, state), {
+      ...A,
+      isOptional: true,
+    });
   }
 
   function And<B extends Runtype>(B: B): Intersect2<A, B> {
